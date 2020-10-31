@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Talent.Views"
+       Title="Talent"
+       x:Class="Talent.AppShell">
+    <TabBar>
+        <ShellContent Title="Чат" Icon="mess.png" ContentTemplate="{DataTemplate local:MessPage}"/>
+        <ShellContent Title="Скидки" Icon="target.png" ContentTemplate="{DataTemplate local:TargetPage}"/>
+        <ShellContent x:Name="homePage" Title="Новости" Icon="news.png" ContentTemplate="{DataTemplate local:NewsPage}"/>
+        <ShellContent Title="Тесты" Icon="test.png" ContentTemplate="{DataTemplate local:TestPage}"/>
+        <ShellContent Title="Профиль" Icon="profile.png" ContentTemplate="{DataTemplate local:ProfilePage}"/>
+    </TabBar>
+
+</Shell>
