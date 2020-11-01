@@ -1,33 +1,58 @@
-import socket, time
+import time
+import socket
 
-host = socket.gethostbyname(socket.gethostname())
-port = 9090
+def send_answer(conn, status="200 OK", typ="text/plain; charset=utf-8", data=""):
+    data = data.encode("utf-8")
+    conn.send(b"HTTP/1.1 " + status.encode("utf-8") + b"\r\n")
+    conn.send(b"Server: simplehttp\r\n")
+    conn.send(b"Connection: close\r\n")
+    conn.send(b"Content-Type: " + typ.encode("utf-8") + b"\r\n")
+    conn.send(b"Content-Length: " + bytes(len(data)) + b"\r\n")
+    conn.send(b"\r\n")
+    conn.send(data)
 
-clients = []
+def parse(conn, addr):
+    data = b""
+    
+    while not b"\r\n" in data: 
+        tmp = conn.recv(1024)
+        if not tmp:   
+            break
+        else:
+            data += tmp
+    
+    if not data:     
+        return        
+        
+    udata = data.decode("utf-8")
+    
+    udata = udata.split("\r\n", 1)[0]
+    method, address, protocol = udata.split(" ", 2)
+    
+    if method != "GET" or address != "/time.html":
+        send_answer(conn, "404 Not Found", data="Не найдено")
+        return
 
-s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-s.bind((host,port))
+    answer = """<!DOCTYPE html>"""
+    answer += """<html><head><title>Время</title></head><body><h1>"""
+    answer += time.strftime("%H:%M:%S %d.%m.%Y")
+    answer += """</h1></body></html>"""
+    
+    send_answer(conn, typ="text/html; charset=utf-8", data=answer)
 
-quit = False
-print("[ Сервер Запущен ]")
 
-while not quit:
-	try:
-		data, addr = s.recvfrom(1024)
+sock = socket.socket()
+sock.bind( ("", 8080) )
+sock.listen(5)
 
-		if addr not in clients:
-			clients.append(addr)
-
-		itsatime = time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime())
-
-		print("["+addr[0]+"]["+str(addr[1])+"]["+itsatime+"]/",end="")
-		print(data.decode("utf-8"))
-
-		for client in clients:
-			if addr != client:
-				s.sendto(data,client)
-	except:	
-		print("\n[ Сервер Остановлен ]")
-		quit = True
-		
-s.close()
+try:
+    while 1: 
+        conn, addr = sock.accept()
+        print("New connection from " + addr[0])
+        try:
+            parse(conn, addr)
+        except:
+            send_answer(conn, "500 Internal Server Error", data="Ошибка")
+        finally:
+            conn.close()
+finally: sock.close()
