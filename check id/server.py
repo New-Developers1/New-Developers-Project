@@ -1,30 +1,20 @@
+import socket
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+sock = socket.socket()
+sock.bind(('', 9090))
+sock.listen(1)
+conn, addr = sock.accept()
 
-html = "<html><body>Все работает</body></html>"
+print ('connected:', addr)
 
-class ServerHandler(BaseHTTPRequestHandler):
-
-   def do_GET(self):
-        if self.path == "/":
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(html.encode('utf-8'))
-        else:
-            self.send_error(404, "Page Not Found {}".format(self.path))
-
-def server_thread(self):
-    server_address = ('', 80)
-    httpd = HTTPServer(server_address, ServerHandler)
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    httpd.server_close()
-
-if __name__ == '__main__':
-    port = 80
-    print("Starting server at port %d" % port)
-    server_thread(port)
-
+while True:
+    connection = sqlite3.connect('db')
+    curs = connection.cursor()
+ 
+    data = conn.recv(1024).decode("utf-8")
+    print('Received: ', data)
+    if data == 'first':
+        cur.execute("select id from People where id=?", (postid,))
+        data = curs.fetchall()
+        conn.send(b'first: ' + data.encode("utf-8"))
+        print('Send: ', data)
